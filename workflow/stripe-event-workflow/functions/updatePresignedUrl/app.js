@@ -1,7 +1,7 @@
 const aws = require('aws-sdk')
 const s3 = new aws.S3()
 
-exports.lambdaHandler = async (event, context) => {
+exports.handler = async (event, context) => {
     console.log(event)
     const getObjectInput = {
         Bucket: event.Bucket,

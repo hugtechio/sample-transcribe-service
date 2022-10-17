@@ -18,9 +18,9 @@
       "Type": "Task",
       "Resource": "arn:aws:states:::lambda:invoke",
       "Parameters": {
-        "FunctionName": "arn:aws:lambda:us-east-1:704982529207:function:<<YOUR_PRESIGNED_URL_FUNCTION>>",
+        "FunctionName": "arn:aws:lambda:us-east-1:704982529207:function:sample-transcription-service-workflow-PresignedUrl-LmcHZhwz8WRn:$LATEST",
         "Payload": {
-          "Bucket": "<<YOUR_UPLOAD_BUCKET>>",
+          "Bucket": "upload.sample-transcription-service",
           "Key.$": "$.Hash.Value"
         }
       },
@@ -36,17 +36,44 @@
           "BackoffRate": 2
         }
       ],
-      "Next": "CopyObject",
+      "Next": "Lambda Invoke (1)",
       "ResultPath": "$.Url",
       "ResultSelector": {
         "Data.$": "$.Payload"
       }
     },
+    "Lambda Invoke (1)": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:us-east-1:704982529207:function:sample-transcription-service-workflow-1-Stripe-h51v3lHBIpqY:$LATEST",
+        "Payload": {
+          "PaymentIntentId.$": "$.detail.data.object.payment_intent"
+        }
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "ResultPath": "$.ProductName",
+      "ResultSelector": {
+        "Data.$": "$.Payload"
+      },
+      "Next": "CopyObject"
+    },
     "CopyObject": {
       "Type": "Task",
       "Parameters": {
-        "Bucket": "<<YOUR_WEBSITE_BUCKET>>",
-        "CopySource": "<<YOUR_WEBSITE_BUCKET>>/index.html",
+        "Bucket": "website.sample-transcription-service",
+        "CopySource": "website.sample-transcription-service/index.html",
         "Key.$": "States.Format('{}/index.html', $.Hash.Value)"
       },
       "Resource": "arn:aws:states:::aws-sdk:s3:copyObject",
@@ -56,8 +83,8 @@
     "CopyObject (1)": {
       "Type": "Task",
       "Parameters": {
-        "Bucket": "<<YOUR_WEBSITE_BUCKET>>",
-        "CopySource": "<<YOUR_WEBSITE_BUCKET>>/logo192.png",
+        "Bucket": "website.sample-transcription-service",
+        "CopySource": "website.sample-transcription-service/logo192.png",
         "Key.$": "States.Format('{}/logo192.png', $.Hash.Value)"
       },
       "Resource": "arn:aws:states:::aws-sdk:s3:copyObject",
@@ -67,8 +94,8 @@
     "CopyObject (2)": {
       "Type": "Task",
       "Parameters": {
-        "Bucket": "<<YOUR_WEBSITE_BUCKET>>",
-        "CopySource": "<<YOUR_WEBSITE_BUCKET>>/logo512.png",
+        "Bucket": "website.sample-transcription-service",
+        "CopySource": "website.sample-transcription-service/logo512.png",
         "Key.$": "States.Format('{}/logo512.png', $.Hash.Value)"
       },
       "Resource": "arn:aws:states:::aws-sdk:s3:copyObject",
@@ -78,8 +105,8 @@
     "CopyObject (3)": {
       "Type": "Task",
       "Parameters": {
-        "Bucket": "<<YOUR_WEBSITE_BUCKET>>",
-        "CopySource": "<<YOUR_WEBSITE_BUCKET>>/manifest.json",
+        "Bucket": "website.sample-transcription-service",
+        "CopySource": "website.sample-transcription-service/manifest.json",
         "Key.$": "States.Format('{}/manifest.json', $.Hash.Value)"
       },
       "Resource": "arn:aws:states:::aws-sdk:s3:copyObject",
@@ -89,8 +116,8 @@
     "CopyObject (4)": {
       "Type": "Task",
       "Parameters": {
-        "Bucket": "<<YOUR_WEBSITE_BUCKET>>",
-        "CopySource": "<<YOUR_WEBSITE_BUCKET>>/robots.txt",
+        "Bucket": "website.sample-transcription-service",
+        "CopySource": "website.sample-transcription-service/robots.txt",
         "Key.$": "States.Format('{}/robots.txt', $.Hash.Value)"
       },
       "Resource": "arn:aws:states:::aws-sdk:s3:copyObject",
@@ -100,8 +127,8 @@
     "CopyObject (5)": {
       "Type": "Task",
       "Parameters": {
-        "Bucket": "<<YOUR_WEBSITE_BUCKET>>",
-        "CopySource": "<<YOUR_WEBSITE_BUCKET>>/favicon.ico",
+        "Bucket": "website.sample-transcription-service",
+        "CopySource": "website.sample-transcription-service/favicon.ico",
         "Key.$": "States.Format('{}/favicon.ico', $.Hash.Value)"
       },
       "Resource": "arn:aws:states:::aws-sdk:s3:copyObject",
@@ -111,8 +138,8 @@
     "CopyObject (6)": {
       "Type": "Task",
       "Parameters": {
-        "Bucket": "<<YOUR_WEBSITE_BUCKET>>",
-        "CopySource": "<<YOUR_WEBSITE_BUCKET>>/asset-manifest.json",
+        "Bucket": "website.sample-transcription-service",
+        "CopySource": "website.sample-transcription-service/asset-manifest.json",
         "Key.$": "States.Format('{}/asset-manifest.json', $.Hash.Value)"
       },
       "Resource": "arn:aws:states:::aws-sdk:s3:copyObject",
@@ -123,9 +150,9 @@
       "Type": "Task",
       "Resource": "arn:aws:states:::lambda:invoke",
       "Parameters": {
-        "FunctionName": "arn:aws:lambda:us-east-1:704982529207:function:<<YOUR_EMBED_PRESIGNED_URL_FUNCTION>>",
+        "FunctionName": "arn:aws:lambda:us-east-1:704982529207:function:sample-transcription-service-wo-UpdatePresignedUrl-WWqGKAlFsNXh:$LATEST",
         "Payload": {
-          "Bucket": "<<YOUR_WEBSITE_BUCKET>>",
+          "Bucket": "website.sample-transcription-service",
           "Key.$": "States.Format('{}/index.html', $.Hash.Value)",
           "PreSignUrl.$": "$.Url.Data.Url"
         }
@@ -153,7 +180,7 @@
       "Parameters": {
         "FromEmailAddress": "ito+test001@hugtech.io",
         "Destination": {
-          "ToAddresses.$": "States.Array($.detail.data.object.customer_details.email)"
+          "ToAddresses.$": "States.Array($.detail.customer_details.email)"
         },
         "Content": {
           "Simple": {
@@ -164,7 +191,7 @@
             "Body": {
               "Text": {
                 "Charset": "UTF-8",
-                "Data.$": "States.Format('Thank you! Please upload media via link: http://<<YOUR_WEBSITE_BUCKET>>.s3-website-us-east-1.amazonaws.com/{}/index.html', $.Hash.Value)"
+                "Data.$": "States.Format('Thank you! Please upload media via link: http://website.sample-transcription-service.s3-website-us-east-1.amazonaws.com/{}/index.html', $.Hash.HashValue)"
               }
             }
           }
@@ -181,10 +208,10 @@
         "TableName": "purchase",
         "Item": {
           "purchase_id": {
-            "S.$": "$.Hash.Value"
+            "S.$": "$.Hash.HashValue"
           },
           "email": {
-            "S.$": "$.detail.data.object.customer_details.email"
+            "S.$": "$.detail.customer_details.email"
           }
         }
       },
