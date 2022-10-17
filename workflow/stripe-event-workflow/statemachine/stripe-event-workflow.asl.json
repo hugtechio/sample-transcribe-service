@@ -151,7 +151,7 @@
     "SendEmail": {
       "Type": "Task",
       "Parameters": {
-        "FromEmailAddress": "ito+test001@hugtech.io",
+        "FromEmailAddress": "<<YOUR_SES_IDENTITY>>",
         "Destination": {
           "ToAddresses.$": "States.Array($.detail.data.object.customer_details.email)"
         },

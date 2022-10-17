@@ -1,0 +1,135 @@
+{
+  "Comment": "A description of my state machine",
+  "StartAt": "Choice",
+  "States": {
+    "Choice": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "And": [
+            {
+              "Variable": "$.detail-type",
+              "StringEquals": "Object Created"
+            },
+            {
+              "Variable": "$.detail.bucket.name",
+              "StringEquals": "<<YOUR_UPLOAD_BUCKET>>"
+            }
+          ],
+          "Next": "StartTranscriptionJob"
+        },
+        {
+          "And": [
+            {
+              "Variable": "$.detail-type",
+              "StringEquals": "Object Created"
+            },
+            {
+              "Variable": "$.detail.bucket.name",
+              "StringEquals": "<<YOUR_DOWNLOAD_BUCKET>>"
+            }
+          ],
+          "Next": "CopyObject"
+        }
+      ],
+      "Default": "Pass"
+    },
+    "CopyObject": {
+      "Type": "Task",
+      "Parameters": {
+        "Bucket": "<<YOUR_DOWNLOAD_BUCKET>>",
+        "CopySource.$": "States.Format('{}/{}', $.detail.bucket.name, $.detail.object.key)",
+        "Key.$": "$.detail.object.key"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:s3:copyObject",
+      "Next": "CreateDownloadUrl",
+      "ResultPath": "$.CopyObject"
+    },
+    "CreateDownloadUrl": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "<<YOUR_DOWNLOAD_FUNCTION>>",
+        "Payload": {
+          "Bucket": "<<YOUR_DOWNLOAD_BUCKET>>",
+          "Key.$": "$.detail.object.key"
+        }
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "GetPurchase",
+      "ResultPath": "$.CreateDownloadUrl",
+      "ResultSelector": {
+        "Data.$": "$.Payload"
+      }
+    },
+    "GetPurchase": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::dynamodb:getItem",
+      "Parameters": {
+        "TableName": "purchase",
+        "Key": {
+          "purchase_id": {
+            "S.$": "$.CreateDownloadUrl.Data.Hash"
+          }
+        }
+      },
+      "Next": "SendEmail",
+      "ResultPath": "$.GetPurchase"
+    },
+    "SendEmail": {
+      "Type": "Task",
+      "End": true,
+      "Parameters": {
+        "FromEmailAddress": "<<YOUR_SES_IDENTITY>>",
+        "Destination": {
+          "ToAddresses.$": "States.Array($.GetPurchase.Item.email.S)"
+        },
+        "Content": {
+          "Simple": {
+            "Subject": {
+              "Data": "[transcribe service tran] Your audio file is ready for download",
+              "Charset": "UTF-8"
+            },
+            "Body": {
+              "Text": {
+                "Charset": "UTF-8",
+                "Data.$": "States.Format('Audio file transcripted! download result via link: {}', $.CreateDownloadUrl.Data.Url)"
+              }
+            }
+          }
+        }
+      },
+      "Resource": "arn:aws:states:::aws-sdk:sesv2:sendEmail",
+      "ResultPath": "$.SendEmail"
+    },
+    "StartTranscriptionJob": {
+      "Type": "Task",
+      "Parameters": {
+        "Media": {
+          "MediaFileUri.$": "States.Format('s3://{}/{}',$.detail.bucket.name, $.detail.object.key)"
+        },
+        "TranscriptionJobName.$": "$.detail.object.etag",
+        "IdentifyLanguage": true,
+        "OutputBucketName": "<<YOUR_DOWNLOAD_BUCKET>>",
+        "OutputKey.$": "States.Format('{}.json', $.detail.object.key)"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:transcribe:startTranscriptionJob",
+      "End": true
+    },
+    "Pass": {
+      "Type": "Pass",
+      "End": true
+    }
+  }
+}
