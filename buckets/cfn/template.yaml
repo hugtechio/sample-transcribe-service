@@ -5,14 +5,28 @@ Parameters:
   WebsiteBucketName:
     Type: String
     Default: website.sample-transcription-service
+  BootstrapVersion:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /cdk-bootstrap/hnb659fds/version
+    Description: Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]
 Resources:
   uploadbucket75A28D48:
     Type: AWS::S3::Bucket
     Properties:
       BucketName:
         Ref: UploadBucketName
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - PUT
+            AllowedOrigins:
+              - "*"
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
+    Metadata:
+      aws:cdk:path: BucketsStack/uploadbucket/Resource
   uploadbucketNotifications5689B3D3:
     Type: Custom::S3BucketNotifications
     Properties:
@@ -25,6 +39,8 @@ Resources:
       NotificationConfiguration:
         EventBridgeConfiguration: {}
       Managed: true
+    Metadata:
+      aws:cdk:path: BucketsStack/uploadbucket/Notifications/Resource
   uploadbucketPolicy6FE9B473:
     Type: AWS::S3::BucketPolicy
     Properties:
@@ -51,6 +67,8 @@ Resources:
                 - - Ref: uploadbucket75A28D48
                   - -bucket-policy
         Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: BucketsStack/uploadbucket/Policy/Resource
   BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleB6FB88EC:
     Type: AWS::IAM::Role
     Properties:
@@ -67,6 +85,8 @@ Resources:
             - - "arn:"
               - Ref: AWS::Partition
               - :iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+    Metadata:
+      aws:cdk:path: BucketsStack/BucketNotificationsHandler050a0587b7544547bf325f094a3db834/Role/Resource
   BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleDefaultPolicy2CF63D36:
     Type: AWS::IAM::Policy
     Properties:
@@ -79,6 +99,8 @@ Resources:
       PolicyName: BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleDefaultPolicy2CF63D36
       Roles:
         - Ref: BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleB6FB88EC
+    Metadata:
+      aws:cdk:path: BucketsStack/BucketNotificationsHandler050a0587b7544547bf325f094a3db834/Role/DefaultPolicy/Resource
   BucketNotificationsHandler050a0587b7544547bf325f094a3db8347ECC3691:
     Type: AWS::Lambda::Function
     Properties:
@@ -195,6 +217,8 @@ Resources:
     DependsOn:
       - BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleDefaultPolicy2CF63D36
       - BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleB6FB88EC
+    Metadata:
+      aws:cdk:path: BucketsStack/BucketNotificationsHandler050a0587b7544547bf325f094a3db834/Resource
   webuploaderbucketDC2C7D09:
     Type: AWS::S3::Bucket
     Properties:
@@ -205,6 +229,8 @@ Resources:
         IndexDocument: index.html
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
+    Metadata:
+      aws:cdk:path: BucketsStack/webuploaderbucket/Resource
   webuploaderbucketPolicy6240546E:
     Type: AWS::S3::BucketPolicy
     Properties:
@@ -229,3 +255,98 @@ Resources:
                 - - Ref: webuploaderbucketDC2C7D09
                   - -bucket-policy
         Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: BucketsStack/webuploaderbucket/Policy/Resource
+  CDKMetadata:
+    Type: AWS::CDK::Metadata
+    Properties:
+      Analytics: v2:deflate64:H4sIAAAAAAAA/0WKTQ6CMBBGz8K+HQUxcS0XIHAAU9sxGfqXtEVjGu6uFBJWb+Z7r4H2CudKfCKXSnNDT8hjElKz7uV6EYTFhIH9/SPHC+T7LDWmVe7Xht4bkt9j3v6FkbCQB29wVYVHuTdLURj9HGTJOu8UJfJuYc4rhCme3nUL9Q2aaopEPMwukUUYNv4ACMgaKMMAAAA=
+    Metadata:
+      aws:cdk:path: BucketsStack/CDKMetadata/Default
+    Condition: CDKMetadataAvailable
+Conditions:
+  CDKMetadataAvailable:
+    Fn::Or:
+      - Fn::Or:
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - af-south-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-east-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-northeast-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-northeast-2
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-south-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-southeast-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-southeast-2
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ca-central-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - cn-north-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - cn-northwest-1
+      - Fn::Or:
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-central-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-north-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-south-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-west-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-west-2
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-west-3
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - me-south-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - sa-east-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-east-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-east-2
+      - Fn::Or:
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-west-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-west-2
+Rules:
+  CheckBootstrapVersion:
+    Assertions:
+      - Assert:
+          Fn::Not:
+            - Fn::Contains:
+                - - "1"
+                  - "2"
+                  - "3"
+                  - "4"
+                  - "5"
+                - Ref: BootstrapVersion
+        AssertDescription: CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI.
+

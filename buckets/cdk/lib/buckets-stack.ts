@@ -1,6 +1,6 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import { Bucket } from 'aws-cdk-lib/aws-s3';
+import { Bucket, HttpMethods } from 'aws-cdk-lib/aws-s3';
 import { PolicyStatement, Effect, AnyPrincipal } from 'aws-cdk-lib/aws-iam';
 
 export class BucketsStack extends cdk.Stack {
@@ -21,7 +21,16 @@ export class BucketsStack extends cdk.Stack {
 
     const uploadBucket = new Bucket(this, 'uploadbucket', {
       bucketName: uploadBucketName.valueAsString,
-      eventBridgeEnabled: true
+      eventBridgeEnabled: true,
+      cors: [
+        {
+          allowedMethods: [HttpMethods.PUT],
+          allowedOrigins: ['*'],
+          allowedHeaders: ['*'],
+          exposedHeaders: [],
+          maxAge: 3000
+        }
+      ]
     })
     const bucketPolicyUploadBucket = new PolicyStatement({
       sid: `${uploadBucket.bucketName}-bucket-policy`,

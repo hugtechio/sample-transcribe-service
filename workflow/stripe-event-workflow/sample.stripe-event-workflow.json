@@ -1,0 +1,100 @@
+{
+  "version": "0",
+  "id": "cd196bf1-14e6-43d7-7295-44f4d2a503c4",
+  "detail-type": "checkout.session.completed",
+  "source": "stripe.com",
+  "account": "704982529207",
+  "time": "2022-10-16T21:47:06Z",
+  "region": "us-east-1",
+  "resources": [],
+  "detail": {
+    "id": "evt_1LteflAousYo8L0GSYqDQF8j",
+    "object": "event",
+    "api_version": "2022-08-01",
+    "created": 1665956825,
+    "data": {
+      "object": {
+        "id": "cs_test_a10IlJCygrLqPgHyXfdvT2FOzVyh9vZA44xFWbkajc3QPeyxk6KlueTRUY",
+        "object": "checkout.session",
+        "after_expiration": null,
+        "allow_promotion_codes": false,
+        "amount_subtotal": 100,
+        "amount_total": 100,
+        "automatic_tax": {
+          "enabled": false,
+          "status": null
+        },
+        "billing_address_collection": "auto",
+        "cancel_url": "https://stripe.com",
+        "client_reference_id": null,
+        "consent": null,
+        "consent_collection": {
+          "promotions": "none",
+          "terms_of_service": "none"
+        },
+        "created": 1665956804,
+        "currency": "eur",
+        "customer": "cus_McuUxH9deA3wfI",
+        "customer_creation": "always",
+        "customer_details": {
+          "address": {
+            "city": null,
+            "country": "NL",
+            "line1": null,
+            "line2": null,
+            "postal_code": null,
+            "state": null
+          },
+          "email": "ito@hugtech.io",
+          "name": "TOMOHARU ITO",
+          "phone": null,
+          "tax_exempt": "none",
+          "tax_ids": []
+        },
+        "customer_email": null,
+        "expires_at": 1666043203,
+        "livemode": false,
+        "locale": "auto",
+        "metadata": {},
+        "mode": "payment",
+        "payment_intent": "pi_3LtefjAousYo8L0G1HwrcZyU",
+        "payment_link": "plink_1LsRonAousYo8L0GKtxHfPUY",
+        "payment_method_collection": "always",
+        "payment_method_options": {},
+        "payment_method_types": [
+          "card"
+        ],
+        "payment_status": "paid",
+        "phone_number_collection": {
+          "enabled": false
+        },
+        "recovered_from": null,
+        "setup_intent": null,
+        "shipping_address_collection": null,
+        "shipping_cost": null,
+        "shipping_details": null,
+        "shipping_options": [],
+        "status": "complete",
+        "submit_type": "auto",
+        "subscription": null,
+        "success_url": "https://stripe.com",
+        "tax_id_collection": {
+          "enabled": true
+        },
+        "total_details": {
+          "amount_discount": 0,
+          "amount_shipping": 0,
+          "amount_tax": 0
+        },
+        "url": null
+      }
+    },
+    "livemode": false,
+    "pending_webhooks": 1,
+    "request": {
+      "id": null,
+      "idempotency_key": null
+    },
+    "type": "checkout.session.completed"
+  }
+}

@@ -1,0 +1,12 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "sample-transcription-service-workflow-1"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-1cik5k83sb1gr"
+s3_prefix = "sample-transcription-service-workflow-1"
+region = "us-east-1"
+confirm_changeset = false 
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "StripeApiKey=\"rk_test_51LsRYyAousYo8L0GPcSPZugK82dB2vp0IBBqWichYK3Vvmhvwxk8AQ0tHz3x7SpK931deEI7TNT03rsea90RtGWw00ALGE18bc\""
+image_repositories = []
