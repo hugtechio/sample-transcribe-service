@@ -18,7 +18,7 @@
       "Type": "Task",
       "Resource": "arn:aws:states:::lambda:invoke",
       "Parameters": {
-        "FunctionName": "arn:aws:lambda:us-east-1:<<YOUR_AWS_ACCOUNT_ID>>:function:<<YOUR_PRESIGNED_URL_FUNCTION>>",
+        "FunctionName": "arn:aws:lambda:<<YOUR_AWS_LAMBDA_REGION>>:<<YOUR_AWS_ACCOUNT_ID>>:function:<<YOUR_PRESIGNED_URL_FUNCTION>>",
         "Payload": {
           "Bucket": "<<YOUR_UPLOAD_BUCKET>>",
           "Key.$": "$.Hash.Value"
@@ -123,7 +123,7 @@
       "Type": "Task",
       "Resource": "arn:aws:states:::lambda:invoke",
       "Parameters": {
-        "FunctionName": "arn:aws:lambda:us-east-1:<<YOUR_AWS_ACCOUNT_ID>>:function:<<YOUR_EMBED_PRESIGNED_URL_FUNCTION>>",
+        "FunctionName": "arn:aws:lambda:<<YOUR_AWS_LAMBDA_REGION>>:<<YOUR_AWS_ACCOUNT_ID>>:function:<<YOUR_EMBED_PRESIGNED_URL_FUNCTION>>",
         "Payload": {
           "Bucket": "<<YOUR_WEBSITE_BUCKET>>",
           "Key.$": "States.Format('{}/index.html', $.Hash.Value)",
@@ -164,7 +164,7 @@
             "Body": {
               "Text": {
                 "Charset": "UTF-8",
-                "Data.$": "States.Format('Thank you! Please upload media via link: http://<<YOUR_WEBSITE_BUCKET>>.s3-website-us-east-1.amazonaws.com/{}/index.html', $.Hash.Value)"
+                "Data.$": "States.Format('Thank you! Please upload media via link: http://<<YOUR_WEBSITE_BUCKET>>.s3-website-<<YOUR_AWS_S3_REGION>>.amazonaws.com/{}/index.html', $.Hash.Value)"
               }
             }
           }

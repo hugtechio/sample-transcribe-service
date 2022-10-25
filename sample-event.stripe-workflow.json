@@ -3,9 +3,9 @@
   "id": "cd196bf1-14e6-43d7-7295-44f4d2a503c4",
   "detail-type": "checkout.session.completed",
   "source": "stripe.com",
-  "account": "704982529207",
+  "account": "XXXXXXXXXX",
   "time": "2022-10-16T21:47:06Z",
-  "region": "us-east-1",
+  "region": "xxxxxxxxx",
   "resources": [],
   "detail": {
     "id": "evt_1LteflAousYo8L0GSYqDQF8j",
