@@ -1,0 +1,232 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "stripe-webhook\nAmazon EventBridge Inbound webhooks using lambda fURLs CFN Template.\n",
+  "Parameters": {
+    "StripeWebhookSecret": {
+      "Type": "String",
+      "Description": "Stripe webhook secret",
+      "NoEcho": true,
+      "AllowedPattern": ".+"
+    },
+    "EventBusName": {
+      "Type": "String",
+      "Description": "EventBridge event bus name",
+      "Default": "default"
+    },
+    "LambdaInvocationThreshold": {
+      "Type": "String",
+      "Description": "Innovation Alarm Threshold for number of events in a 5 minute period.",
+      "Default": 2000
+    }
+  },
+  "Outputs": {
+    "FunctionUrlEndpoint": {
+      "Description": "Webhhook Function URL Endpoint",
+      "Value": {
+        "Fn::GetAtt": "WebhookFunctionUrl.FunctionUrl"
+      }
+    },
+    "LambdaFunctionName": {
+      "Value": {
+        "Ref": "WebhookFunction"
+      }
+    },
+    "LambdaFunctionARN": {
+      "Description": "Lambda function ARN.",
+      "Value": {
+        "Fn::GetAtt": "WebhookFunction.Arn"
+      }
+    }
+  },
+  "Resources": {
+    "WebhookSecretsManager": {
+      "Type": "AWS::SecretsManager::Secret",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "WebhookSecret-${AWS::StackName}"
+        },
+        "Description": "Secrets Manager for storing Webhook Secret",
+        "SecretString": {
+          "Ref": "StripeWebhookSecret"
+        }
+      }
+    },
+    "LambdaInvocationsAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmDescription": {
+          "Fn::Sub": "Alarm for ${AWS::StackName} - InboundWebhook Lambda for traffic spikes"
+        },
+        "AlarmName": {
+          "Fn::Sub": "InboundWebhook-Lambda-Invocation-Alarm-${AWS::StackName}"
+        },
+        "MetricName": "Invocations",
+        "Namespace": "AWS/Lambda",
+        "Statistic": "Sum",
+        "Period": "300",
+        "EvaluationPeriods": "2",
+        "Threshold": {
+          "Ref": "LambdaInvocationThreshold"
+        },
+        "Dimensions": [
+          {
+            "Name": "FunctionName",
+            "Value": {
+              "Ref": "WebhookFunction"
+            }
+          }
+        ],
+        "ComparisonOperator": "GreaterThanThreshold"
+      }
+    },
+    "WebhookFunction": {
+      "Type": "AWS::Lambda::Function",
+      "DependsOn": "WebhookSecretsManager",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "eventbridge-inbound-webhook-templates-prod-${AWS::Region}"
+          },
+          "S3Key": "lambda-templates/stripe-lambdasrc.zip"
+        },
+        "FunctionName": {
+          "Fn::Sub": [
+            "InboundWebhook-Lambda-${ID}",
+            {
+              "ID": {
+                "Fn::Select": [
+                  2,
+                  {
+                    "Fn::Split": [
+                      "/",
+                      {
+                        "Ref": "AWS::StackId"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "Handler": "app.lambda_handler",
+        "MemorySize": 128,
+        "Role": {
+          "Fn::GetAtt": [
+            "WebhookFunctionRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "python3.8",
+        "Timeout": 100,
+        "Environment": {
+          "Variables": {
+            "STRIPE_WEBHOOK_SECRET_ARN": {
+              "Ref": "WebhookSecretsManager"
+            },
+            "EVENT_BUS_NAME": {
+              "Ref": "EventBusName"
+            }
+          }
+        },
+        "Tags": [
+          {
+            "Key": "lambda:createdBy",
+            "Value": "SAM"
+          }
+        ]
+      }
+    },
+    "WebhookFunctionUrl": {
+      "Type": "AWS::Lambda::Url",
+      "Properties": {
+        "TargetFunctionArn": {
+          "Ref": "WebhookFunction"
+        },
+        "AuthType": "NONE"
+      }
+    },
+    "WebhookFunctionUrlPublicPermissions": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunctionUrl",
+        "FunctionName": {
+          "Ref": "WebhookFunction"
+        },
+        "Principal": "*",
+        "FunctionUrlAuthType": "NONE"
+      }
+    },
+    "WebhookFunctionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              }
+            }
+          ]
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        ],
+        "Policies": [
+          {
+            "PolicyName": "WebhookFunctionRolePolicy0",
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "events:PutEvents",
+                  "Resource": {
+                    "Fn::Sub": [
+                      "arn:${AWS::Partition}:events:${AWS::Region}:${AWS::AccountId}:event-bus/${eventBusName}",
+                      {
+                        "eventBusName": {
+                          "Ref": "EventBusName"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "PolicyName": "WebhookFunctionRolePolicy1",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "secretsmanager:DescribeSecret",
+                    "secretsmanager:GetSecretValue"
+                  ],
+                  "Resource": {
+                    "Ref": "WebhookSecretsManager"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "lambda:createdBy",
+            "Value": "SAM"
+          }
+        ]
+      }
+    }
+  }
+}
